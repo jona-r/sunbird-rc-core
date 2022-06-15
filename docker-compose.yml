@@ -25,7 +25,7 @@ services:
   registry:
     image: dockerhub/sunbird-rc-core:latest
     volumes:
-      - ${PWD}/java/registry/src/main/resources/public/_schemas:/home/sunbirdrc/config/public/_schemas
+      - /home/ubuntu/_schemas:/home/sunbirdrc/config/public/_schemas
 
     environment:
       - connectionInfo_uri=jdbc:postgresql://db:5432/registry
@@ -48,10 +48,7 @@ services:
         condition: service_started
   keycloak:
     image: dockerhub/ndear-keycloak
-    volumes:
-      - ${PWD}/imports:/opt/jboss/keycloak/imports
     environment:
-      - KEYCLOAK_LOGO=https://svgshare.com/i/hCs.svg
       - DB_VENDOR=postgres
       - DB_ADDR=db
       - DB_PORT=5432
@@ -60,7 +57,6 @@ services:
       - DB_PASSWORD=postgres
       - KEYCLOAK_USER=admin
       - KEYCLOAK_PASSWORD=admin
-      - KEYCLOAK_IMPORT=/opt/jboss/keycloak/imports/realm-export.json
       - PROXY_ADDRESS_FORWARDING=true
     healthcheck:
       test:
@@ -100,22 +96,6 @@ services:
       - PORT=8078
     ports:
       - "8078:8078"
-  file-storage:
-    image: quay.io/minio/minio
-    volumes:
-      - ${HOME}/minio/data:/data
-    environment:
-      - MINIO_ROOT_USER=admin
-      - MINIO_ROOT_PASSWORD=12345678
-    command: server --address 0.0.0.0:9000 --console-address 0.0.0.0:9001 /data
-    ports:
-      - "9000:9000"
-      - "9001:9001"
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
-      interval: 30s
-      timeout: 20s
-      retries: 3
   notification-ms:
     image: dockerhub/sunbird-rc-notification-service:latest
     ports:
